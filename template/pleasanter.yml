@@ -1,0 +1,27 @@
+apiKey: XXXXXXXXXX
+apiVersion: 1.1
+baseUrl: http://127.0.0.1:50001
+
+utility:
+  prefix: 共通：
+  Scripts:
+    共通処理:
+      ScriptAll: true
+
+sites:
+  サイト名１:
+    siteId: 2
+    Scripts:
+      共通：共通処理:
+        Id: 1
+      タイトル:
+        Id: 2
+        ScriptAll: true
+  サイト名２:
+    siteId: 3
+    Scripts:
+      共通：共通処理:
+        Id: 1
+      タイトル:
+        Id: 2
+        ScriptAll: true
