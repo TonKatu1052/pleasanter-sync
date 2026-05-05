@@ -3,6 +3,8 @@
   "displayName": "pleasanter-sync",
   "description": "",
   "version": "0.0.1",
+  "publisher": "tonkatu1052",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.118.0"
   },
@@ -29,7 +31,9 @@
     "@types/vscode": "^1.118.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
     "yaml": "^2.8.4"
   }
 }

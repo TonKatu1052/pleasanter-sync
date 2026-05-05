@@ -4,6 +4,7 @@ import { syncFile } from './syncFile';
 
 export function activate(context: vscode.ExtensionContext) {
     const output = vscode.window.createOutputChannel('PleasanterSync');
+    output.appendLine('[INFO] Pleasanter Sync extension activated');
 
     const disposable = vscode.workspace.onDidSaveTextDocument(async (document) => {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
