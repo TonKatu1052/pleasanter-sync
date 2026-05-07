@@ -99,7 +99,7 @@ function getOptions(
     const siteId = config.sites?.[site]?.siteId;
     const params = config.sites?.[site]?.[type]?.[title] ?? {};
 
-    if (siteId) {
+    if (!siteId) {
         return [];
     }
 
