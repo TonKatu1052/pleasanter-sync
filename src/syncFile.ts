@@ -1,24 +1,30 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Config, Option, Types } from './types';
+import { CreateId } from './idManager';
 
 export async function syncFile(
     document: vscode.TextDocument,
     config: Config,
+    createId: CreateId,
     output: vscode.OutputChannel,
 ) {
     const filePath = document.uri.fsPath;
     const content = document.getText();
     const { site, type, title } = parsePath(filePath);
-    const options = getOptions(config, site, type, title);
+    const options = getOptions(config, site, type, title, createId);
     if (options.length === 0) return;
 
     output.appendLine(`[SYNC] ${site}/${type}/${title}`);
 
     await Promise.all(options.map(async (option) => {
         const siteId = option.siteId;
+        const url = `${config.baseUrl}/api/items/${siteId}/updatesitesettings`;
 
-        const response = await fetch(`${config.baseUrl}/api/items/${siteId}/updatesitesettings`, {
+        output.appendLine(`[SYNC] URL: ${url}`);
+        output.appendLine(`[SYNC] Params: ${JSON.stringify(option.params)}`);
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json; charset=utf-8',
@@ -62,6 +68,7 @@ function getOptions(
     site: string,
     type: Types,
     title: string,
+    createId: CreateId,
 ): Option[] {
     if (site === 'Utility') {
         const utilParams = config.utility?.[type]?.[title] ?? {};
@@ -74,9 +81,14 @@ function getOptions(
             const siteId = siteConfig?.siteId;
 
             if (typeConfig && title in typeConfig && siteId) {
+                const params = { Title: title, ...utilParams, ...typeConfig[title] };
+                if (params.Id === undefined) {
+                    params.Id = createId.getUtilId(type, title);
+                }
+
                 options.push({
                     siteId: siteId,
-                    params: { Title: title, ...utilParams, ...typeConfig[title] },
+                    params: params,
                 });
             }
         }
@@ -84,8 +96,11 @@ function getOptions(
         return options;
     }
 
-    const siteId = config.sites?.[site]?.siteId ?? null;
-    const params = config.sites?.[site]?.[type]?.[title] ?? null;
+    const siteId = config.sites?.[site]?.siteId;
+    const params = config.sites?.[site]?.[type]?.[title];
+    if (typeof params === 'object' && params.Id === undefined) {
+        params.Id = createId.getSiteId(type, site, title);
+    }
 
     return siteId && params
         ? [{

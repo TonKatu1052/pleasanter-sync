@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { loadConfig } from './loadConfig';
 import { syncFile } from './syncFile';
+import { CreateId } from './idManager';
 
 export function activate(context: vscode.ExtensionContext) {
     const output = vscode.window.createOutputChannel('PleasanterSync');
@@ -13,8 +14,10 @@ export function activate(context: vscode.ExtensionContext) {
         const config = loadConfig(workspaceFolder.uri.fsPath, output);
         if (!config) return;
 
+        const createId = new CreateId(config);
+
         try {
-            await syncFile(document, config, output);
+            await syncFile(document, config, createId, output);
         } catch (error: any) {
             vscode.window.showErrorMessage(`Sync failed: ${error.message}`);
             output.appendLine(`[ERROR] ${error.message}`);
