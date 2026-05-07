@@ -97,15 +97,16 @@ function getOptions(
     }
 
     const siteId = config.sites?.[site]?.siteId;
-    const params = config.sites?.[site]?.[type]?.[title];
-    if (typeof params === 'object' && params.Id === undefined) {
-        params.Id = createId.getSiteId(type, site, title);
+    const params = config.sites?.[site]?.[type]?.[title] ?? {};
+
+    if (siteId) {
+        return [];
     }
 
-    return siteId && params
-        ? [{
-            siteId: siteId,
-            params: params,
-        }]
-        : [];
+    params.Id = createId.getSiteId(type, site, title);
+
+    return [{
+        siteId: siteId,
+        params: params,
+    }];
 }
