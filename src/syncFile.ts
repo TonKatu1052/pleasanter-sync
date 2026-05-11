@@ -44,6 +44,12 @@ export async function syncFile(
             const text = await response.text();
             throw new Error(`API Error：${response.status} - ${text}`);
         }
+
+        response.json().then((data) => {
+            if (typeof data === 'object' && data !== null && 'Id' in data && 'Message' in data) {
+                output.appendLine(`[SUCCESS] Id: ${data.Id} ${data.Message}`);
+            }
+        });
     }));
 }
 
