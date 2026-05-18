@@ -54,6 +54,10 @@ export async function syncFile(
     const filePath = document.uri.fsPath;
     const content = document.getText();
     const { folderName, type, fileName } = parsePath(filePath);
+    if (!TYPES.includes(type)) {
+        output.appendLine(`[SKIP] ${filePath}`);
+        return;
+    }
 
     output.appendLine(`[SYNC] File: ${folderName}/${type}/${fileName}`);
 
@@ -255,7 +259,7 @@ function getInvalidOptions(type: Types) {
 function parsePath(filePath: string) {
     const parts = filePath.split(path.sep);
 
-    if (parts.length < 3 || !TYPES.includes(parts.at(-2) as Types)) {
+    if (parts.length < 3) {
         throw new Error('Invalid path structure');
     }
 

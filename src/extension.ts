@@ -18,7 +18,12 @@ export function activate(context: vscode.ExtensionContext) {
             const createId = new CreateId(config);
 
             try {
-                await syncFile(document, config, createId, output);
+                vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Pleasanter Syncing...',
+                }, async () => {
+                    await syncFile(document, config, createId, output);
+                });
             } catch (error: any) {
                 vscode.window.showErrorMessage(`Sync failed: ${error.message}`);
                 output.appendLine(`[ERROR] ${error.message}`);
@@ -58,7 +63,12 @@ export function activate(context: vscode.ExtensionContext) {
             const createId = new CreateId(config);
 
             try {
-                await syncSite(workspaceFolder.uri.fsPath, selected.label, config, createId, output);
+                vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Pleasanter Syncing...',
+                }, async () => {
+                    await syncSite(workspaceFolder.uri.fsPath, selected.label, config, createId, output);
+                });
             } catch (error: any) {
                 vscode.window.showErrorMessage(`SyncSite failed: ${error.message}`);
                 output.appendLine(`[ERROR] ${error.message}`);
