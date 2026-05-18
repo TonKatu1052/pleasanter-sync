@@ -1,6 +1,14 @@
-export type Types = 'Styles' | 'Scripts' | 'Htmls' | 'ServerScripts';
+export const TYPES = ['Styles', 'Scripts', 'Htmls', 'ServerScripts'] as const;
+export type Types = typeof TYPES[number];
 
-export type Params = 'Id' | 'Title' | 'Disabled' | 'Body' | 'Delete';
+export interface BaseParams {
+    Id?: number;
+    Title?: string;
+    Body?: string;
+    Disabled?: boolean;
+    [key: string]: any;
+}
+
 
 export type Config = {
     apiKey: string;
@@ -8,15 +16,10 @@ export type Config = {
     baseUrl: string;
     utility?: {
         prefix?: string;
-    } & Partial<Record<Types, Record<Params | string, any>>>;
+    } & Partial<Record<Types, Record<string, BaseParams>>>;
     sites: Record<
         string, {
             siteId: number;
-        } & Partial<Record<Types, Record<Params | string, any>>>
+        } & Partial<Record<Types, Record<string, BaseParams>>>
     >;
 };
-
-export type Option = {
-    siteId: number;
-    params: Record<Params | any, any>;
-}
