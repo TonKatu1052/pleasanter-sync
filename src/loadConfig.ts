@@ -12,7 +12,10 @@ export function loadConfig(
     const configPath = path.join(workspaceFolder, 'pleasanter.yml');
     if (!fs.existsSync(configPath)) return null;
 
-    dotenv.config({ path: path.join(workspaceFolder, '.env') });
+    dotenv.config({
+        path: path.join(workspaceFolder, '.env'),
+        override: true,
+    });
 
     try {
         const raw = fs.readFileSync(configPath, 'utf-8');
@@ -29,7 +32,7 @@ export function loadConfig(
 function resolveEnv(obj: any): any {
     if (typeof obj === 'string') {
         return obj.replace(/\$\{(.+?)\}/g, (_, key) => {
-            if (!process.env[key]) {
+            if (process.env[key] === undefined) {
                 throw new Error(`Env not found: ${key}`);
             }
             return process.env[key];
@@ -40,7 +43,7 @@ function resolveEnv(obj: any): any {
     }
     if (typeof obj === 'object' && obj !== null) {
         const result: any = {};
-        for (const key in obj) {
+        for (const key of Object.keys(obj)) {
             result[key] = resolveEnv(obj[key]);
         }
         return result;

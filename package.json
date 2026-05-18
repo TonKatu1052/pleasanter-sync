@@ -16,7 +16,19 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": []
+    "commands": [
+      {
+        "command": "pleasanterSync.selectSite",
+        "title": "PleasanterSync: Select Site"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pleasanterSync.selectSite",
+        "key": "ctrl+alt+p",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
