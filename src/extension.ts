@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
             const createId = new CreateId(config);
 
             try {
-                vscode.window.withProgress({
+                await vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: 'Pleasanter syncing...',
                 }, async () => {
@@ -54,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
             const createId = new CreateId(config);
 
             try {
-                vscode.window.withProgress({
+                await vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: 'Pleasanter syncing...',
                 }, async () => {
@@ -83,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (!siteId) return;
 
             try {
-                vscode.window.withProgress({
+                await vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: 'Pleasanter syncing...',
                 }, async () => {
