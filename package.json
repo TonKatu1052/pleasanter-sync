@@ -12,7 +12,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "workspaceContains:pleasanter.yml"
   ],
   "main": "./out/extension.js",
   "contributes": {
