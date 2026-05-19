@@ -3,6 +3,7 @@ import { loadConfig } from './loadConfig';
 import { getSiteCode, syncFile, syncSite } from './syncFile';
 import { CreateId } from './idManager';
 import { Config } from './types';
+import path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
     const output = vscode.window.createOutputChannel('PleasanterSync');
@@ -12,6 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.onDidSaveTextDocument(async (document) => {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
             if (!workspaceFolder) return;
+            if (!inSites(document, workspaceFolder)) return;
 
             const config = loadConfig(workspaceFolder.uri.fsPath, output);
             if (!config) return;
@@ -56,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
                     location: vscode.ProgressLocation.Notification,
                     title: 'Pleasanter syncing...',
                 }, async () => {
-                    await syncSite(workspaceFolder.uri.fsPath, config, selected.label, createId, output);
+                    await syncSite(srcPath(workspaceFolder), config, selected.label, createId, output);
                 });
             } catch (error: any) {
                 vscode.window.showErrorMessage(`SyncSite failed: ${error.message}`);
@@ -64,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
 
-        vscode.commands.registerCommand('pleasanterSync.action', async () => {
+        vscode.commands.registerCommand('pleasanterSync.getSiteCode', async () => {
             const editor = vscode.window.activeTextEditor;
             if (!editor) return;
 
@@ -85,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
                     location: vscode.ProgressLocation.Notification,
                     title: 'Pleasanter syncing...',
                 }, async () => {
-                    await getSiteCode(workspaceFolder.uri.fsPath, config, siteId, output);
+                    await getSiteCode(srcPath(workspaceFolder), config, siteId, output);
                 });
             } catch (error: any) {
                 vscode.window.showErrorMessage(`GetSiteCode failed: ${error.message}`);
@@ -95,6 +97,18 @@ export function activate(context: vscode.ExtensionContext) {
 
         output
     );
+}
+
+function srcPath(workspaceFolder: vscode.WorkspaceFolder) {
+    return path.join(workspaceFolder.uri.fsPath, 'Sites');
+}
+
+function inSites(document: vscode.TextDocument, workspaceFolder: vscode.WorkspaceFolder) {
+    const filePath = document.uri.fsPath;
+    const srcDir = srcPath(workspaceFolder);
+    const relative = path.relative(srcDir, filePath);
+
+    return !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
 async function selectSite(config: Config) {

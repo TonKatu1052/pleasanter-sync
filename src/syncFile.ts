@@ -57,7 +57,7 @@ export async function getSiteCode(
 }
 
 export async function syncSite(
-    workspacePath: string,
+    srcPath: string,
     config: Config,
     site: string,
     createId: CreateId,
@@ -73,7 +73,7 @@ export async function syncSite(
         if (!typeConfig) continue;
 
         for (const title of Object.keys(typeConfig)) {
-            const file = resolveFile(workspacePath, site, type, title, config.utility?.prefix);
+            const file = resolveFile(srcPath, site, type, title, config.utility?.prefix);
 
             if (!file) {
                 output.appendLine(`[WARN] File not found: ${type}/${title}`);
