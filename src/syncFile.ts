@@ -4,10 +4,62 @@ import * as vscode from 'vscode';
 import { BaseParams, Config, TYPES, Types } from './types';
 import { CreateId } from './idManager';
 
+export async function getSiteCode(
+    workspacePath: string,
+    config: Config,
+    siteId: number,
+    output: vscode.OutputChannel
+) {
+    const url = `${config.baseUrl}/api/items/${siteId}/getsite`;
+    output.appendLine(`[GET] URL: ${url}`);
+
+    const response = await getResponse(url, config);
+    const data = ((await response.json()) as Record<string, any>).Response.Data;
+    const types = [...TYPES];
+    const siteName = data.Title;
+
+    let configText = `\t${siteName}:\n\t\tsiteId: ${siteId}\n`;
+
+    for (const type of types) {
+        const list = data.SiteSettings[type];
+        if (!Array.isArray(list) || list.length === 0) continue;
+
+        configText += `\t\t${type}:\n`;
+
+        const dir = path.join(workspacePath, siteName, type);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+
+        for (const item of list) {
+            const title = item.Title;
+            const body = item.Body ?? '';
+            const ext = getExtension(type);
+            const filePath = path.join(dir, `${title}${ext}`);
+
+            configText += `\t\t\t${title}:\n`;
+            for (const [option, value] of Object.entries(item)) {
+                if (['Body', 'Title'].includes(option)) continue;
+
+                const key = ['Id', 'Disabled', 'Delete'].includes(option)
+                    ? option
+                    : `${getTypePrefix(type)}${option}`;
+
+                configText += `\t\t\t\t${key}: ${value}\n`;
+            }
+
+            fs.writeFileSync(filePath, body, 'utf-8');
+            output.appendLine(`[CREATE] ${type}/${title}`);
+        }
+    }
+
+    output.appendLine(configText);
+}
+
 export async function syncSite(
     workspacePath: string,
-    site: string,
     config: Config,
+    site: string,
     createId: CreateId,
     output: vscode.OutputChannel
 ) {
@@ -98,11 +150,27 @@ export async function syncFile(
     }));
 }
 
-async function updatesitesettings(config: Config, siteId: number, params: Record<string, any>, output: vscode.OutputChannel) {
+async function updatesitesettings(
+    config: Config,
+    siteId: number,
+    params: Record<string, any>,
+    output: vscode.OutputChannel
+) {
     const url = `${config.baseUrl}/api/items/${siteId}/updatesitesettings`;
     output.appendLine(`[SYNC] URL: ${url}`);
     console.log(params);
 
+    const response = await getResponse(url, config, params);
+
+    const data = await response.json();
+    if (typeof data === 'object' && data !== null && 'Id' in data && 'Message' in data) {
+        output.appendLine(`[SUCCESS] Id: ${data.Id} ${data.Message}`);
+    }
+
+    return response;
+}
+
+async function getResponse(url: string, config: Config, params: Record<string, any> = {}) {
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -120,12 +188,11 @@ async function updatesitesettings(config: Config, siteId: number, params: Record
         throw new Error(`API Error：${response.status} - ${text}`);
     }
 
-    const data = await response.json();
-    if (typeof data === 'object' && data !== null && 'Id' in data && 'Message' in data) {
-        output.appendLine(`[SUCCESS] Id: ${data.Id} ${data.Message}`);
-    }
-
     return response;
+}
+
+function getTypePrefix(type: Types) {
+    return type.slice(0, -1);
 }
 
 function getSiteConfig(config: Config, site: string) {
